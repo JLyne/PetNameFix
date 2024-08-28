@@ -5,11 +5,13 @@ plugins {
 group = 'io.github.tanguygab'
 version = '1.0.2'
 
+java.sourceCompatibility = JavaVersion.VERSION_21
+java.targetCompatibility = JavaVersion.VERSION_21
+
 repositories {
     mavenCentral()
     maven {
-        name = "spigotmc-repo"
-        url = "https://hub.spigotmc.org/nexus/content/repositories/snapshots/"
+        url = uri('https://papermc.io/repo/repository/maven-public/')
     }
     maven {
         name = "sonatype"
@@ -18,7 +20,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly "org.spigotmc:spigot-api:1.20.2-R0.1-SNAPSHOT"
+    compileOnly 'io.papermc.paper:paper-api:1.21.1-R0.1-SNAPSHOT'
     compileOnly 'io.netty:netty-all:5.0.0.Alpha2'
 }
 

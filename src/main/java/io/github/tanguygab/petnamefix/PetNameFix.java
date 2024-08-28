@@ -17,10 +17,6 @@ public final class PetNameFix extends JavaPlugin implements Listener {
     public void onEnable() {
         try {
             NMSStorage nms = new NMSStorage();
-            if (nms.getMinorVersion() < 9) {
-                disable();
-                return;
-            }
             NMSStorage.setInstance(nms);
             pipeline = new PipelineInjector();
             getServer().getPluginManager().registerEvents(this,this);
@@ -31,7 +27,7 @@ public final class PetNameFix extends JavaPlugin implements Listener {
     }
 
     private void disable() {
-        getLogger().severe("Unsupported server software/version (MC 1.9-1.20.6), disabling...");
+        getLogger().severe("Unsupported server software/version (MC 1.21.1), disabling...");
         getServer().getPluginManager().disablePlugin(this);
     }
 
@@ -53,5 +49,4 @@ public final class PetNameFix extends JavaPlugin implements Listener {
         if (pet.isTamed() && pet.getOwner() == e.getPlayer() && e.getHand() == EquipmentSlot.OFF_HAND)
             e.setCancelled(true);
     }
-
 }
