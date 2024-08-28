@@ -1,30 +1,28 @@
 package io.github.tanguygab.petnamefix;
 
 import com.google.common.base.Optional;
-import io.github.tanguygab.petnamefix.nms.DataWatcher;
-import io.github.tanguygab.petnamefix.nms.DataWatcherItem;
-import io.github.tanguygab.petnamefix.nms.NMSStorage;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundBundlePacket;
+import net.minecraft.network.protocol.game.ClientboundSetEntityDataPacket;
+import net.minecraft.network.syncher.SynchedEntityData;
 import org.bukkit.Bukkit;
+import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 
 import java.util.ConcurrentModificationException;
+import java.util.Iterator;
 import java.util.List;
 
 public class PipelineInjector {
 
     private static final String DECODER_NAME = "PetNameFix";
 
-    /** NMS Storage reference for quick access */
-    private final NMSStorage nms = NMSStorage.getInstance();
-
-    /** DataWatcher position of pet owner field */
-    private final int petOwnerPosition = getPetOwnerPosition();
-
-    public PipelineInjector() {
+	public PipelineInjector() {
         Bukkit.getServer().getOnlinePlayers().forEach(this::inject);
     }
 
@@ -32,14 +30,6 @@ public class PipelineInjector {
         Bukkit.getServer().getOnlinePlayers().forEach(this::uninject);
     }
 
-    private int getPetOwnerPosition() {
-        int version = nms.getMinorVersion();
-        return version >= 17 ? 18
-                : version >= 15 ? 17
-                : version == 14 ? 16
-                : version >= 10 ? 14
-                : 13;
-    }
 
     public void inject(Player player) {
         final Channel channel = getChannel(player);
@@ -57,66 +47,51 @@ public class PipelineInjector {
     }
 
     private Channel getChannel(Player player) {
-        try {
-            if (nms.CHANNEL != null)
-                return (Channel) nms.CHANNEL.get(nms.NETWORK_MANAGER.get(NMSStorage.getInstance().PLAYER_CONNECTION.get(nms.getHandle.invoke(player))));
-        } catch (Exception e) {e.printStackTrace();}
-        return null;
+        return ((CraftPlayer) player).getHandle().connection.connection.channel;
     }
 
     public class BukkitChannelDuplexHandler extends ChannelDuplexHandler {
 
         @Override
         public void write(ChannelHandlerContext ctx, Object packet, ChannelPromise promise) throws Exception {
-            if (nms.is1_19_4Plus() && nms.ClientboundBundlePacket.isInstance(packet)) {
-                Iterable<?> packets = (Iterable<?>) nms.ClientboundBundlePacket_packets.get(packet);
-                for (Object pack : packets) {
-                    if (nms.PacketPlayOutEntityMetadata.isInstance(pack)) {
-                        checkMetaData(pack);
+            if(packet instanceof ClientboundBundlePacket bundle) {
+                for(Packet<? super ClientGamePacketListener> p : bundle.subPackets()) {
+                    if(p instanceof ClientboundSetEntityDataPacket metadata) {
+                        checkMetaData(metadata);
                     }
                 }
-            } else if (nms.PacketPlayOutEntityMetadata.isInstance(packet)) {
-                checkMetaData(packet);
-            } else if (nms.PacketPlayOutSpawnEntityLiving.isInstance(packet) && nms.PacketPlayOutSpawnEntityLiving_DATAWATCHER != null) {
-                //<1.15
-                DataWatcher watcher = DataWatcher.fromNMS(nms.PacketPlayOutSpawnEntityLiving_DATAWATCHER.get(packet));
-                DataWatcherItem petOwner = watcher.getItem(petOwnerPosition);
-                if (petOwner != null && (petOwner.getValue() instanceof java.util.Optional || petOwner.getValue() instanceof Optional)) {
-                    watcher.removeValue(petOwnerPosition);
-                    nms.PacketPlayOutSpawnEntityLiving_DATAWATCHER.set(packet,watcher.toNMS());
-                }
+
+            } else if(packet instanceof ClientboundSetEntityDataPacket metadata) {
+                checkMetaData(metadata);
             }
+
             super.write(ctx, packet, promise);
         }
     }
 
-    @SuppressWarnings("unchecked")
-    private void checkMetaData(Object packet) throws ReflectiveOperationException {
-        Object removedEntry = null;
-        List<Object> items = (List<Object>) nms.PacketPlayOutEntityMetadata_LIST.get(packet);
-        if (items == null) return;
+    private void checkMetaData(ClientboundSetEntityDataPacket packet) {
+        List<SynchedEntityData.DataValue<?>> items = packet.packedItems();
+
         try {
-            for (Object item : items) {
-                if (item == null) continue;
-                int slot;
-                Object value;
-                if (nms.is1_19_3Plus()) {
-                    slot = nms.DataWatcher$DataValue_POSITION.getInt(item);
-                    value = nms.DataWatcher$DataValue_VALUE.get(item);
-                } else {
-                    slot = nms.DataWatcherObject_SLOT.getInt(nms.DataWatcherItem_TYPE.get(item));
-                    value = nms.DataWatcherItem_VALUE.get(item);
-                }
-                if (slot == petOwnerPosition) {
-                    if (value instanceof java.util.Optional || value instanceof com.google.common.base.Optional) {
-                        removedEntry = item;
-                    }
-                }
-            }
+			for (Iterator<SynchedEntityData.DataValue<?>> iterator = items.iterator(); iterator.hasNext(); ) {
+				SynchedEntityData.DataValue<?> item = iterator.next();
+				if (item == null) continue;
+				int slot;
+				Object value;
+
+				slot = item.id();
+				value = item.value();
+
+				/* DataWatcher position of pet owner field */
+				if (slot == 18) {
+					if (value instanceof java.util.Optional || value instanceof Optional) {
+						iterator.remove();
+					}
+				}
+			}
         } catch (ConcurrentModificationException e) {
             //no idea how can this list change in another thread since it's created for the packet but whatever, try again
             checkMetaData(packet);
         }
-        if (removedEntry != null) items.remove(removedEntry);
     }
 }

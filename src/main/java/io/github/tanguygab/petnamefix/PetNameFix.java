@@ -1,6 +1,5 @@
 package io.github.tanguygab.petnamefix;
 
-import io.github.tanguygab.petnamefix.nms.NMSStorage;
 import org.bukkit.entity.Tameable;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -15,20 +14,8 @@ public final class PetNameFix extends JavaPlugin implements Listener {
 
     @Override
     public void onEnable() {
-        try {
-            NMSStorage nms = new NMSStorage();
-            NMSStorage.setInstance(nms);
-            pipeline = new PipelineInjector();
-            getServer().getPluginManager().registerEvents(this,this);
-        } catch (ReflectiveOperationException e) {
-            disable();
-            e.printStackTrace();
-        }
-    }
-
-    private void disable() {
-        getLogger().severe("Unsupported server software/version (MC 1.21.1), disabling...");
-        getServer().getPluginManager().disablePlugin(this);
+        pipeline = new PipelineInjector();
+        getServer().getPluginManager().registerEvents(this,this);
     }
 
     @Override
