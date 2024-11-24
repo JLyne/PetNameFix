@@ -1,6 +1,6 @@
 name: PetNameFix
 version: '${version}'
 main: io.github.tanguygab.petnamefix.PetNameFix
-api-version: '1.21.1'
+api-version: '1.21.3'
 authors: [ NEZNAMY, Tanguygab, Jim (AnEnragedPigeon) ]
 description: A feature to disable minecraft feature making tamed animals with custom names copy NameTag properties of their owner.
