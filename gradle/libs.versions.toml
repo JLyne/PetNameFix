@@ -1,0 +1,12 @@
+[versions]
+pluginYmlPaper = "0.7.1"
+paper = "1.21.4-R0.1-SNAPSHOT"
+paperweightUserdev = "2.0.0-beta.15"
+
+[libraries]
+paperApi = { group = "io.papermc.paper", name = "paper-api", version.ref = "paper" }
+paperweightBundle = { group = "io.papermc.paper", name = "dev-bundle", version.ref = "paper" }
+
+[plugins]
+pluginYmlPaper = { id = "de.eldoria.plugin-yml.paper", version.ref = "pluginYmlPaper" }
+paperweightUserdev = { id = "io.papermc.paperweight.userdev", version.ref = "paperweightUserdev" }
