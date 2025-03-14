@@ -18,7 +18,7 @@ import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.List;
 
-public class PipelineInjector {
+public final class PipelineInjector {
 
     private static final String DECODER_NAME = "PetNameFix";
 

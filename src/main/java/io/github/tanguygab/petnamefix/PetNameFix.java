@@ -31,9 +31,8 @@ public final class PetNameFix extends JavaPlugin implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onClick(PlayerInteractEntityEvent e) {
-        if (!(e.getRightClicked() instanceof Tameable)) return;
-        Tameable pet = (Tameable) e.getRightClicked();
-        if (pet.isTamed() && pet.getOwner() == e.getPlayer() && e.getHand() == EquipmentSlot.OFF_HAND)
+        if (!(e.getRightClicked() instanceof Tameable pet)) return;
+		if (pet.isTamed() && pet.getOwner() == e.getPlayer() && e.getHand() == EquipmentSlot.OFF_HAND)
             e.setCancelled(true);
     }
 }
