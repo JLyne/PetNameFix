@@ -27,7 +27,7 @@ dependencies {
 
 paper {
     main = "io.github.tanguygab.petnamefix.PetNameFix"
-    apiVersion = libs.versions.paper.get().replace(Regex("(\\-(rc|pre)\\d+)?\\-R\\d.\\d-SNAPSHOT"), "")
+    apiVersion = libs.versions.paper.get().replace(".build.+", "")
     authors = listOf("NEZNAMY", "Tanguygab", "Jim (AnEnragedPigeon)")
     description = "A feature to disable minecraft feature making tamed animals with custom names copy NameTag properties of their owner."
 }

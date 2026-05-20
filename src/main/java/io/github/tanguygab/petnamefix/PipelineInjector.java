@@ -73,7 +73,8 @@ public final class PipelineInjector {
         List<SynchedEntityData.DataValue<?>> items = packet.packedItems();
 
         try {
-			for (Iterator<SynchedEntityData.DataValue<?>> iterator = items.iterator(); iterator.hasNext(); ) {
+			Iterator<SynchedEntityData.DataValue<?>> iterator = items.iterator();
+			while ( iterator.hasNext() ) {
 				SynchedEntityData.DataValue<?> item = iterator.next();
 				if (item == null) continue;
 				int slot;
@@ -83,7 +84,7 @@ public final class PipelineInjector {
 				value = item.value();
 
 				/* DataWatcher position of pet owner field */
-				if (slot == 18) {
+				if (slot == 19) {
 					if (value instanceof java.util.Optional || value instanceof Optional) {
 						iterator.remove();
 					}
